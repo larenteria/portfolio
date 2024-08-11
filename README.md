@@ -1,6 +1,7 @@
 # portfolio
 
-Hello, and welcome to my portfolio! 
+Hello and welcome... 
+to my portfolio! 
 
 A few quick details: 
 1. NNN Projects and dataScraper are mostly done, but I plan to keep working on dataScraper a bit more after I finish Chess.
@@ -10,4 +11,5 @@ When all is finished I will update this read me file, including introducing new 
 I would recommend checking out Chess and playing against yourself first! 
 
 My best,
+
 Luis
