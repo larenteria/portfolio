@@ -29,7 +29,6 @@ ROWS, COLS = 8, 8
 SQ_SIZE = WIDTH // COLS
 
 IN_CHECK = False
-
 # Colors - TO BE SHIFTED INTO A CUSTUMIZATION FILE VERY SOON
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -89,8 +88,6 @@ def draw_board(screen, selected_square=None, checkmate_info=None, colors = [LIGH
             else:  
                 pygame.draw.rect(screen, BLACK, rect, 1)  # Draw black grid lines
 
-
-
 # Draw pieces
 def draw_pieces(screen, board, images):
     for row in range(ROWS):
@@ -99,9 +96,6 @@ def draw_pieces(screen, board, images):
             if piece != 'X':
                 screen.blit(images[piece], pygame.Rect(col * SQ_SIZE, row * SQ_SIZE, SQ_SIZE, SQ_SIZE))
 
-# Flip board
-def flip_board(board):
-    return [row[::-1] for row in board[::-1]]
 
 
 ##########################
@@ -130,9 +124,7 @@ def main():
     running = True
     selected_piece = None
     move_made = False
-    flipped = False
     white_turn = True  # White starts the game
-    checkmate_info = None
 
     while running:
         for event in pygame.event.get():
@@ -144,104 +136,40 @@ def main():
                 row = pos[1] // SQ_SIZE
 
                 if selected_piece:
-                    valid_move = cr.is_valid_move(selected_piece[2], (selected_piece[0], selected_piece[1]), (row, col), board, cr.Prev_Move)
-                    if valid_move:
-                        temp_board = [r[:] for r in board]
-                        start_row, start_col = selected_piece[0], selected_piece[1]
-                        end_row, end_col = row, col
-                        piece = selected_piece[2]
+                    # Call make_move from chessRules.py instead of manually checking the move
+                    temp_board, move_made, in_check, is_checkmate_game, draw = cr.make_move(
+                        selected_piece, (row, col), board, white_turn
+                    )
 
-                        if valid_move == "kingside_castling":
-                            # Move the king two squares to the right
-                            temp_board[end_row][end_col] = piece
-                            temp_board[start_row][start_col] = 'X'
-                            # Move the rook to the square next to the king on the left
-                            temp_board[start_row][start_col + 1] = board[start_row][start_col + 3]
-                            temp_board[start_row][start_col + 3] = 'X'
-
-
-                        elif valid_move == "queenside_castling":
-                            # Move the king two squares to the left
-                            temp_board[end_row][end_col] = piece
-                            temp_board[start_row][start_col] = 'X'
-                            # Move the rook to the square next to the king on the right
-                            temp_board[start_row][start_col - 1] = board[start_row][start_col - 4]
-                            temp_board[start_row][start_col - 4] = 'X'
-
-
-                        else:
-                            # Normal move
-                            temp_board[start_row][start_col] = 'X'
-                            temp_board[end_row][end_col] = piece
-
-                            if piece[1] == 'K':
-                                cr.King_Moved[piece[0]] = True  # Mark the king as moved
-                            elif piece[1] == 'R':
-                                if start_col == 0:
-                                    cr.Rook_Moved[piece[0]]['left'] = True  # Mark the queenside rook as moved
-                                elif start_col == 7:
-                                    cr.Rook_Moved[piece[0]]['right'] = True  # Mark the kingside rook as moved
-
-                        # Check if the move puts you in check
-                        if cr.is_in_check(temp_board, 'w' if white_turn else 'b', ROWS, COLS)[0]:
-                            continue
-
-                        clr = None
-                        # Check if you are currently in check and your move puts you out of check
-                        if not white_turn and IN_CHECK:
-                            clr = 'b'
-                        elif white_turn and IN_CHECK:
-                            clr = 'w'
-                        else:
-                            # Checking if the current move is checkmate
-                            clr = 'w' if not white_turn else 'b'
-
-                        is_checkmate_game, in_check = cr.is_checkmate(temp_board, clr, ROWS, COLS)
-                        if is_checkmate_game:
-                            print(is_checkmate_game)
-                            print(f"Checkmate! {'White' if white_turn else 'Black'} wins!")
-
-                        if IN_CHECK and in_check:
-                            continue
-
-                        if valid_move == "kingside_castling": 
-                            cr.King_Moved[piece[0]] = True  # Mark the king as moved
-                            cr.Rook_Moved[piece[0]]['right'] = True  # Mark the kingside rook as moved
-                            cr.update_king_status(piece)
-                        elif valid_move == "queenside_castling":
-                            cr.King_Moved[piece[0]] = True  # Mark the king as moved
-                            cr.Rook_Moved[piece[0]]['left'] = True  # Mark the queenside rook as moved
-
-                            cr.update_king_status(piece)
-
-
-                        # For En passant
-                        cr.Prev_Move = (selected_piece[0], selected_piece[1]), (row, col), selected_piece[2]
-
-                        # Update the board and turn
+                    if move_made:
                         board = temp_board
                         selected_piece = None
-                        move_made = True
                         white_turn = not white_turn
-
                         IN_CHECK = in_check
+
+                        if is_checkmate_game:
+                            print(f"Checkmate! {'White' if not white_turn else 'Black'} wins!")
+                        if draw:
+                            print("Draw!")
+
+                        move_made = True
                     else:
+                        # Invalid move or player is still in check
                         selected_piece = None
-
-
                 else:
                     piece = board[row][col]
+                    # Select the piece if it's the current player's turn
                     if piece != 'X' and ((white_turn and piece.startswith('w')) or (not white_turn and piece.startswith('b'))):
                         selected_piece = (row, col, piece)
+
+            # Handle key press to flip the board
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_f:
-                    board = flip_board(board)
-                    flipped = not flipped
-        
-        if move_made:
-            move_made = False
+                    board = cr.flip_board(board)
+                    cr.Board_Flipped = not cr.Board_Flipped
 
-        draw_board(screen, selected_piece, checkmate_info)
+        # Redraw board and pieces after every frame
+        draw_board(screen, selected_piece, None)
         draw_pieces(screen, board, images)
         pygame.display.flip()
         clock.tick(60)
