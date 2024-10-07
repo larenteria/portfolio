@@ -1,5 +1,7 @@
 # portfolio
 
+WAIT! If you're here instead of checking this out check out the new website: https://larenteria.github.io/portfolio-website/
+
 QUICK UPDATES: 
 - Chess logic now fully implemented. Works as a simple two player game
 
