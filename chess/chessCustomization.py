@@ -13,7 +13,6 @@ WHITE = (255, 255, 255)
 HIGHLIGHT_COLOR = (186, 202, 68)
 
 # Chessboard color themes
-
 # Theme 1: Classic Brown
 DARK_BROWN = (139, 69, 19)
 LIGHT_BROWN = (245, 222, 179)
@@ -67,9 +66,6 @@ CHESSBOARD_THEMES = [
     (LIGHT_SLATE, DARK_SLATE),         # 8. Slate Blue
     (LIGHT_MONO, DARK_MONO )           # 9. Monochrome
 ]
-
-
-
 
 LIGHT_SQUARES, DARK_SQUARES = CHESSBOARD_THEMES[9]
 SCREEN_COLOR = DARK_GREY
